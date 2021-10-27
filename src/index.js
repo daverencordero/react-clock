@@ -1,0 +1,1 @@
+export {AnalogClock} from './components/AnalogClock/AnalogClock';

@@ -1,0 +1,16 @@
+.AnalogClock{
+  padding: 1rem;
+  border-radius: 0.5rem;
+  display: inline-block;
+  font-family: sans-serif;
+  box-shadow: 0 0.15rem 0.25rem 0.15rem rgba(0,0,0,0.05);
+
+  &_ClockBody{
+    border-radius: 50vh;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0.05);
+  }
+
+  &_TimePicker{
+  }
+}
