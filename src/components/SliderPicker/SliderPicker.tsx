@@ -1,25 +1,44 @@
-import React, {ReactNode, useCallback, useEffect, useState} from "react";
+import React, {FC, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import "./SlidePicker.scss";
 import _ from "lodash";
-import Styles from "../AnalogClock/AnalogClock.module.scss";
+import {useSprings, animated} from 'react-spring';
+import {useDrag} from "@use-gesture/react";
+import useMeasure from "react-use-measure";
 
 const {abs, floor} = Math;
 
-export interface UseSlidePickerValues {
-    slidePicker: ReactNode,
-    setShiftIndex: React.Dispatch<React.SetStateAction<number>>
+export interface SliderPickerProps {
+    itemList: any[];
+    initialShiftIndex?: number;
 }
 
-export interface UseSlidePickerProps {
-    itemList: any[]
-}
-
-export const useSlidePicker = (props: UseSlidePickerProps) => {
+export const SlidePicker: FC<SliderPickerProps> = (props) => {
     const {
-        itemList
+        itemList,
+        initialShiftIndex = 0
     } = props;
 
     const [_itemList, _setItemList] = useState<(string|number|boolean)[]>(itemList);
-    const [_shiftIndex, _setShiftIndex] = useState<number>(0);
+    const [_shiftIndex, _setShiftIndex] = useState<number>(initialShiftIndex);
+
+    const itemListLength = useMemo(()=>_.size(_itemList), [_itemList]);
+
+    const [ref, {height: itemHeight}] = useMeasure();
+
+    const [itemSprings, itemSpringApi] = useSprings(itemListLength, index => ({
+        from: {y: index * itemHeight},
+        y: index * itemHeight
+    }), [itemHeight])
+
+    const dragBind = useDrag((dragState) => {
+        const {offset, down} = dragState;
+        const [,y] = offset;
+
+        if(down)
+        console.log(`y: ${y} h: ${itemHeight} yh: ${y / itemHeight}`)
+    }, {
+        axis: "y"
+    });
 
     const _shiftItemList = useCallback(() => {
         if(_shiftIndex === 0) return;
@@ -42,16 +61,21 @@ export const useSlidePicker = (props: UseSlidePickerProps) => {
         _shiftItemList()
     }, [_shiftItemList]);
 
-    const slidePicker =
-        <div className={Styles.SlidePicker}>
-            {_itemList.map((item) =>
-                <div className={Styles.SlidePicker_Item}>
-                    {item}
-                </div>)}
+    return(
+        <div className={'slide-picker'} {...dragBind()}>
+            {itemSprings.map(({y}, index) => (
+                <animated.div
+                    key={index}
+                    ref={!index ? ref : null}
+                    className={'slide-picker-item'}
+                    style={{y}}>
+                    {_itemList[index]}
+                </animated.div>
+            ))}
         </div>
+    )
+}
 
-    return {
-        slidePicker,
-        setShiftIndex: _setShiftIndex
-    } as UseSlidePickerValues
+function useSpring(arg0: {}) {
+    throw new Error("Function not implemented.");
 }
